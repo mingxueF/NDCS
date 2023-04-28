@@ -1,0 +1,21 @@
+from modules.cube.cube import make_cubic_grid
+import numpy as np
+
+# #Origin of the grid at o=(-5,-5,-5)
+o=np.array([-10,-10,-10])
+
+# #Shape of the grid:
+ncube=130 #Number of points in each direction
+cubegrid=((ncube,ncube,ncube))
+acc=20 #Parameter for the intervall length of the grid (o+[acc,acc,acc])
+
+# #The stepsize in each direction from the origin o is given by acc and ncube-1
+scube=np.array([[acc/(ncube-1), 0, 0],[0, acc/(ncube-1),0],[0, 0, acc/(ncube-1)]])
+cube = make_cubic_grid(cubegrid, scube, o)
+
+densities = True
+switch_factor = True
+NDCS_TF = True
+VTnads = True
+limit_potential = True
+emb_pot = True
