@@ -306,6 +306,7 @@ def compute_energy_results(molA, molB, molAB, dmA, dmB, grid_ref_coords, grid_re
         E_FDET = Ea+Eb + Tsnad_corr + exc_nad + E_es_tot
 
     if functional == "LDA":
+        Tsnad_corr = e_LDA
         E_FDET = Ea+Eb+e_LDA+exc_nad+E_es_tot
    # else:
    #     Tsnad_corr, vt_nad = make_potential_matrix_change(molA, rhoa_dev, rhob_dev,grids, functional)
