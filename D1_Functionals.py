@@ -49,7 +49,6 @@ def compute_kinetic_lc(rho_devs):
     fs- the enhancement factor
     """
     zero_mask = np.where(rho_devs[0] > 1e-10)[0] #A zero mask is added to exclude areas where rho=0
-    print('zero_mask',zero_mask)
     cs = 2*(np.power(3*np.pi**2,1./3.)) 
     grad_rho = rho_devs[1:4].T
     norm_grad = np.sqrt(np.einsum('ij,ij->i', grad_rho, grad_rho)[zero_mask]) # |\nabla\rho|
@@ -62,9 +61,7 @@ def compute_kinetic_lc(rho_devs):
     d = 0.0809615
     e = 0.000057767
     etf,vtf = compute_kinetic_tf(rho_devs[0])
-    print("dimension of tf", etf.shape)
     fs[zero_mask] = (1 + a*s*np.arcsinh(b*s)+(c-d*np.exp(-100*s**2))*s**2)/(1 + a*s*np.arcsinh(b*s) + e*s**4) 
-    print("dimension of fs", fs.shape)
     #e_lc = np.einsum("i,i->i",etf,fs)
     e_lc = etf*fs
     return e_lc

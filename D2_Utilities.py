@@ -13,8 +13,8 @@ from taco.embedding.pyscf_emb_pot import get_charges_and_coords
 from taco.embedding.pyscf_emb_pot import make_potential_matrix_change
 from taco.embedding.pyscf_wrap_single import get_density_from_dm
 from taco.embedding.pyscf_wrap_single import compute_nuclear_repulsion
-from pyscf.dft.numint import eval_ao, eval_rho
-from NDCS2.D1_Functionals import compute_kinetic_weizsacker, ndcs_energy_correc, compute_kinetic_tf, compute_kinetic_limit_experiment, ndcs_switch_factor
+from pyscf.dft.numint import eval_ao, eval_rho,eval_mat
+from NDCS2.D1_Functionals import compute_kinetic_weizsacker, ndcs_energy_correc, compute_kinetic_tf, compute_kinetic_limit_experiment, ndcs_switch_factor, compute_kinetic_potential
 
 def get_k_energy(t_code,mol,dm,grid):
     print("t_code",t_code)
@@ -228,6 +228,12 @@ def compute_energy_results(molA, molB, molAB, dmA, dmB, grid_ref_coords, grid_re
     #################################################################################################################
 
     E_DIFF = (Ea+Eb)-Ea_iso-Eb_iso
+    # int_nad terms
+    vts_pot = compute_kinetic_potential(rhoa_dev, rhob_dev, functional) 
+    ao_mola = eval_ao(molA, grids.coords, deriv=0)
+    v_nad_ts = eval_mat(molA, ao_mola, grids.weights, rhoa_dev[0], vts_pot, xctype='LDA')
+    int_vts = np.einsum('ab,ba',v_nad_ts, dmA)
+    int_vxc = np.einsum('ab,ba',v_nad_xc, dmA)
     #################################################################################################################
     #Non-additive Kinetic energies (LDA and/or NDCS) and final interaction energy
     #################################################################################################################
@@ -244,7 +250,6 @@ def compute_energy_results(molA, molB, molAB, dmA, dmB, grid_ref_coords, grid_re
         ndcspot = compute_kinetic_limit_experiment(rhob_dev) 
         sfactor = ndcs_switch_factor(rhob_dev[0]) 
         e_limit1 = np.dot(grid_ref_weights, rhoa_dev[0]*ndcspot*1/8*sfactor) 
-
         e_NDCS_sym1 = e_limit1
 
         #sym2
@@ -322,7 +327,9 @@ def compute_energy_results(molA, molB, molAB, dmA, dmB, grid_ref_coords, grid_re
         'EB':Eb,
         'Ets_TF_nad':e_LDA,
         'Ets_nad':Tsnad_corr,
+        'int_vts':int_vts,
         'Exc_nad':exc_nad,
+        'int_vxc':int_vxc,
         'J_AB':ecoulomb,
         'Va(rhob)':evbnuca,
         'Vb(rhoa)':evanucb,
@@ -345,6 +352,7 @@ def compute_energy_results(molA, molB, molAB, dmA, dmB, grid_ref_coords, grid_re
         'EB+EA-Eiso':E_DIFF,
         'XC':'-',
         'Exc_nad':exc_nad,
+        'int_vxc':int_vxc,
         'electrostatic terms':'-',
         'J_AB':ecoulomb,
         'Va(rhob)':evbnuca,
@@ -354,6 +362,7 @@ def compute_energy_results(molA, molB, molAB, dmA, dmB, grid_ref_coords, grid_re
         'non-additive kinetic energy':'-',
         'Ets_TF_nad':e_LDA,
         'Ets_nad':Tsnad_corr,
+        'int_vts':int_vts,
         'final results':'-',
         'E_FDET':E_FDET,
         'Eint_FDET':E_int,   
